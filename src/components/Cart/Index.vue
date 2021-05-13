@@ -15,7 +15,7 @@
       <div 
         class="text-center w-9/12"
       >
-        {{ item.name }} (${{ item.unitPrice }})
+        {{ getProductById(item.id)['name'] }} (${{ getProductById(item.id)['unitPrice'] }})
       </div>
       <QuantityPanel
         class="ml-auto w-3/12"
@@ -41,39 +41,19 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import QuantityPanel from './QuantityPanel.vue'
-import { v4 as uuid } from 'uuid'
-import dayjs from 'dayjs'
-
-const DEMO_SHOP_ID = 'DEMO_SHOP_ID'
 
 export default {
+  name: 'Cart',
   components: {
     QuantityPanel
   },
-  data () {
-    return {
-      cartTTLKey: `shop_${DEMO_SHOP_ID}_cart_ttl`,
-      cartIDKey: `shop_${DEMO_SHOP_ID}_cart_id`,
-      items: [{
-        id: '1234-1234-1234',
-        name: '香蔥麵包',
-        quantity: 2,
-        unitPrice: 25
-      }, {
-        id: 'qwer-qwer-qwer',
-        name: '紅豆吐司',
-        quantity: 1,
-        unitPrice: 50
-      }, {
-        id: 'asdf-asdf-asdf',
-        name: '蛋黃酥',
-        quantity: 5,
-        unitPrice: 30
-      }]
-    }
-  },
   computed: {
+    ...mapState({
+      items: state => state.cartItems,
+      products: state => state.products
+    }),
     total () {
       return this.items.reduce((accu, current) => {
         return accu + current.quantity * current.unitPrice
@@ -81,24 +61,14 @@ export default {
     }
   },
   mounted () {
-    let cartTTL = localStorage.getItem(this.cartTTLKey)
-
-    // 不存在 cartTTL 或是 cartTTL 過期 => 產生新的購物車並且賦予新的 cartTTL
-    if (!cartTTL || dayjs.unix(cartTTL).isBefore(dayjs())) {
-      this.createCart()
-    } else {
-      this.renewTTL()
+    const productUUID = new URL(window.location.href).searchParams.get('productId')
+    if (productUUID) {
+      this.add(productUUID)
     }
   },
   methods: {
-    createCart () {
-      // TODO 和後端產生新的購物車
-      let cartTTL = dayjs().unix() + 60 * 60
-      localStorage.setItem(this.cartTTLKey, cartTTL)
-    },
-    renewTTL () {
-      let cartTTL = dayjs().unix() + 60 * 60
-      localStorage.setItem(this.cartTTLKey, cartTTL)
+    getProductById (id) {
+      return this.products.find(product => product.id === id) || {}
     },
     checkout () {
       let cartId = localStorage.getItem(this.cartIDKey)
@@ -107,6 +77,14 @@ export default {
       } else {
         window.alert(cartId)
       }
+    },
+    add (uuid) {
+      const productIndex = this.products.findIndex(product => product.uuid === uuid)
+      if (productIndex < 0) {
+        window.alert('無此商品: ' + uuid)
+        return
+      }
+      window.alert('成功加入購物車')
     },
     remove (id) {
       let targetItemIndex = this.items.findIndex((item) => item.id === id)
