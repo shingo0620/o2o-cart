@@ -3,7 +3,7 @@
     <!-- 頭部控制按鈕 -->
     <div class="flex flex-wrap w-full bg-gray-700 pb-2">
       <div class="w-6/12 bg-gray-200 p-1">
-        <button class="w-full text-center rounded ring-2 ring-gray-700 ring-opacity-60" @click="clear">清空購物車</button>
+        <button class="w-full text-center rounded ring-2 ring-gray-700 ring-opacity-60" @click="resetCart">清空購物車</button>
       </div>
       <div class="w-6/12 bg-green-200 p-1">
         <button class="w-full text-center rounded ring-2 ring-gray-700 ring-opacity-60" @click="checkout">結帳</button>
@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import QuantityPanel from './QuantityPanel.vue'
 
 export default {
@@ -65,16 +65,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['resetCart', 'checkout']),
     getProductByUuid (uuid) {
       return this.products.find(product => product.uuid === uuid) || {}
-    },
-    add (uuid) {
-      const productIndex = this.products.findIndex(product => product.uuid === uuid)
-      if (productIndex < 0) {
-        window.alert('無此商品: ' + uuid)
-        return
-      }
-      window.alert('成功加入購物車')
     }
   }
 }

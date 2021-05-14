@@ -83,6 +83,7 @@ const store = createStore({
 
     saveCart (context) {
       localStorage.setItem(context.state.cartId, JSON.stringify(context.state.cartItems))
+      context.dispatch('renewTTL')
     },
 
     renewTTL (context) {
@@ -119,7 +120,14 @@ const store = createStore({
         context.commit('removeCartItem', index)
       }
       context.dispatch('saveCart')
-    }
+    },
+
+    resetCart (context) {
+      context.commit('setCartItems', [])
+      context.dispatch('saveCart')
+    },
+
+    checkout (context) {}
   },
 
   getters: {
