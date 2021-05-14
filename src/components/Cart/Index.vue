@@ -11,16 +11,16 @@
     </div>
 
     <!-- 購物車內產品 -->
-    <div class="py-5 px-2 flex w-full" v-for="item in items" :key="item.id">
+    <div class="py-5 px-2 flex w-full" v-for="item in items" :key="item.uuid">
       <div 
         class="text-center w-9/12"
       >
-        {{ getProductById(item.id)['name'] }} (${{ getProductById(item.id)['unitPrice'] }})
+        {{ getProductByUuid(item.uuid)['name'] }} (${{ getProductByUuid(item.uuid)['unitPrice'] }})
       </div>
       <QuantityPanel
         class="ml-auto w-3/12"
         v-model="item.quantity"
-        @remove="remove(item.id)"
+        :productUuid="item.uuid"
       >
       </QuantityPanel>
     </div>
@@ -55,28 +55,18 @@ export default {
       products: state => state.products
     }),
     total () {
+      if (this.items.length < 1 || this.products.length < 1) {
+        return 0
+      }
       return this.items.reduce((accu, current) => {
-        return accu + current.quantity * current.unitPrice
+        let product = this.products.find(product => product.uuid === current.uuid)
+        return accu + current.quantity * product.unitPrice
       }, 0)
     }
   },
-  mounted () {
-    const productUUID = new URL(window.location.href).searchParams.get('productId')
-    if (productUUID) {
-      this.add(productUUID)
-    }
-  },
   methods: {
-    getProductById (id) {
-      return this.products.find(product => product.id === id) || {}
-    },
-    checkout () {
-      let cartId = localStorage.getItem(this.cartIDKey)
-      if (!cartId) {
-        localStorage.setItem(this.cartIDKey, uuid())
-      } else {
-        window.alert(cartId)
-      }
+    getProductByUuid (uuid) {
+      return this.products.find(product => product.uuid === uuid) || {}
     },
     add (uuid) {
       const productIndex = this.products.findIndex(product => product.uuid === uuid)
@@ -85,13 +75,6 @@ export default {
         return
       }
       window.alert('成功加入購物車')
-    },
-    remove (id) {
-      let targetItemIndex = this.items.findIndex((item) => item.id === id)
-      this.items.splice(targetItemIndex, 1)
-    },
-    clear () {
-      this.items = []
     }
   }
 }
