@@ -13,12 +13,13 @@
     @click="scanning=false"
     class="text-gray-700 cursor-pointer absolute right-3 bottom-3"
   />
-  <qrcode-stream @decode="onDecode"/>
+  <qrcode-stream @decode="decodeHandler"/>
 </div>
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import { ref, onMounted } from 'vue'
+import { shopId, shopName, getShop, addToCart, createCart, restoreCart } from './compositions'
 import AppHeader from './components/AppHeader.vue'
 import AppFooter from './components/AppFooter.vue'
 import Cart from './components/Cart/Index.vue'
@@ -29,36 +30,33 @@ export default {
     Cart,
     AppFooter
   },
-  data () {
-    return {
-      scanning: false
-    }
-  },
-  computed: {
-    ...mapState({
-      shopId: state => state.shopId,
-      shopName: state => state.shopName
-    })
-  },
-  async mounted () {
-    const url = new URL(window.location.href)
-    const shopId = url.searchParams.get('shopId')
-    await this.getShop(shopId)
 
-    const productUuid = url.searchParams.get('addItem')
-    if (productUuid) {
-      this.addToCart(productUuid)
+  setup (props) {
+    onMounted(() => {
+      const shopId = (new URL(window.location.href)).searchParams.get('shopId')
+      getShop(shopId)
+      addProductByURL(window.location.href)
+    })
+
+    const scanning = ref(false)
+
+    const decodeHandler = (result) => {
+      addProductByURL(result)
+      scanning.value = false
     }
-  },
-  methods: {
-    ...mapActions(['getShop', 'createCart', 'restoreCart', 'addToCart']),
-    onDecode (result) {
-      const url = new URL(result)
-      const productUuid = url.searchParams.get('addItem')
+
+    const addProductByURL = (url) => {
+      const productUuid = (new URL(url)).searchParams.get('addItem')
       if (productUuid) {
-        this.addToCart(productUuid)
+        addToCart(productUuid)
       }
-      this.scanning = false
+    }
+    
+    return {
+      scanning,
+      shopId,
+      shopName,
+      decodeHandler
     }
   }
 }

@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid'
 import dayjs from 'dayjs'
-import { getShop } from '@/api/index.js'
+import { getShop as getShopRequest } from '@/api/index.js'
 import { computed, ref } from 'vue'
 
 export const shopId = ref('')
@@ -9,12 +9,12 @@ export const products = ref([])
 export const cartId = ref('')
 export const cartItems = ref([])
 
-export const cartTTLKey = computed(() => `shop_${state.shopId}_cart_ttl`)
-export const cartIDKey = computed(() => `shop_${state.shopId}_cart_id`)
+export const cartTTLKey = computed(() => `shop_${shopId.value}_cart_ttl`)
+export const cartIDKey = computed(() => `shop_${shopId.value}_cart_id`)
 
-export const getShop = async (shopId) => {
-  shopId.value = shopId
-  const res = (await getShop(shopId)).data
+export const getShop = async (id) => {
+  shopId.value = id
+  const res = (await getShopRequest(id)).data
   shopName.value = res.name
   products.value = res.products
   
@@ -45,12 +45,12 @@ export const restoreCart = () => {
 export const saveCart =  () => {
   localStorage.setItem(cartId.value, JSON.stringify(cartItems.value))
   renewTTL()
-},
+}
 
 export const renewTTL = () => {
   let cartTTL = dayjs().unix() + 60 * 60
   localStorage.setItem(cartTTLKey.value, cartTTL)
-},
+}
 
 export const addToCart = (productUuid) => {
   const index = cartItems.value.findIndex((item) => item.uuid === productUuid)
@@ -81,11 +81,11 @@ export const removeFromCart = (productUuid) => {
     cartItems.value.splice(index, 1)      
   }
   saveCart()
-},
+}
 
 export const resetCart = () => {
   cartItems.value = []
   saveCart()
-},
+}
 
 export const checkout = () => {}

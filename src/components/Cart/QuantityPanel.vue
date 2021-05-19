@@ -8,14 +8,20 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { addToCart, removeFromCart, reduceFromCart } from '@/compositions'
+
 export default {
   props: {
     modelValue: Number,
     productUuid: [Number, String]
   },
-  methods: {
-    ...mapActions(['addToCart', 'removeFromCart', 'reduceFromCart'])
+
+  setup (props) {
+    return {
+      addToCart,
+      removeFromCart,
+      reduceFromCart
+    }
   }
 }
 </script>

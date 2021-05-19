@@ -41,33 +41,39 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import { computed } from 'vue'
+import { cartItems as items, products, resetCart, checkout } from '@/compositions'
 import QuantityPanel from './QuantityPanel.vue'
 
 export default {
   name: 'Cart',
+
   components: {
     QuantityPanel
   },
-  computed: {
-    ...mapState({
-      items: state => state.cartItems,
-      products: state => state.products
-    }),
-    total () {
-      if (this.items.length < 1 || this.products.length < 1) {
+
+  setup (props) {
+    const total = computed(() => {
+      if (items.value.length < 1 || products.value.length < 1) {
         return 0
       }
-      return this.items.reduce((accu, current) => {
-        let product = this.products.find(product => product.uuid === current.uuid)
-        return accu + current.quantity * product.unitPrice
+      return items.value.reduce((accu, current) => {
+        const product = products.value.find(product => product.uuid === current.uuid)
+        return accu + current.quantity * product?.unitPrice
       }, 0)
+    })
+
+    const getProductByUuid = (uuid) => {
+      return products.value.find(product => product.uuid === uuid) || {}
     }
-  },
-  methods: {
-    ...mapActions(['resetCart', 'checkout']),
-    getProductByUuid (uuid) {
-      return this.products.find(product => product.uuid === uuid) || {}
+
+    return {
+      items,
+      products,
+      total,
+      resetCart,
+      checkout,
+      getProductByUuid
     }
   }
 }
