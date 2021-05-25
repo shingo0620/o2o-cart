@@ -56,7 +56,7 @@ export const addToCart = (productUuid) => {
   const index = cartItems.value.findIndex((item) => item.uuid === productUuid)
   if (index > -1) {
     // 商品已存在, 增加數量
-    cartItems.value[index]++
+    cartItems.value[index].quantity++
   } else {
     cartItems.value.push({
       uuid: productUuid,
